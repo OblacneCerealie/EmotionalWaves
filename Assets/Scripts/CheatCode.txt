@@ -1,0 +1,17 @@
+===============================================
+        CODE LINES YOU CAN COPY & PASTE
+===============================================
+
+--- OBJECTIVES ---
+
+UIManager.Instance.SetObjective("Find the ancient artifact");
+UIManager.Instance.ObjectiveDone("Find the ancient artifact");
+UIManager.Instance.ClearAllObjectives();
+
+
+--- DIALOGUE ---
+
+UIManager.Instance.ShowDialogue("Welcome to the Emotional Waves!");
+UIManager.Instance.HideDialogue();
+
+===============================================
