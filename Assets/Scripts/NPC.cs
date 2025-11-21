@@ -17,6 +17,7 @@ public class NPC : MonoBehaviour
 
     [Header("Player Reference")]
     [SerializeField] private Transform player;
+    [SerializeField] private CoffeeHolder coffeeHolder;
 
     // Static list to track occupied destinations across all NPCs
     private static List<Transform> occupiedDestinations = new List<Transform>();
@@ -45,6 +46,10 @@ public class NPC : MonoBehaviour
         waitingPoint = waiting;
         randomDestinations = destinations;
         player = playerTransform;
+        
+        // Find coffee holder
+        coffeeHolder = FindObjectOfType<CoffeeHolder>();
+        
         isInitialized = true;
 
         // Start the NPC behavior immediately
@@ -208,16 +213,32 @@ public class NPC : MonoBehaviour
         }
         else if (currentState == NPCState.WaitingForSecondInteraction)
         {
-            // Second interaction - return to spawn and despawn
-            if (assignedRandomDestination != null)
+            // Second interaction - check if player has coffee
+            if (coffeeHolder != null && coffeeHolder.IsHoldingCoffee())
             {
-                occupiedDestinations.Remove(assignedRandomDestination);
+                // Player gave coffee - take it and leave
+                CoffeeCup coffee = coffeeHolder.GetCurrentCoffee();
+                Debug.Log($"NPC received coffee! Has Milk: {coffee.HasMilk}, Has Sugar: {coffee.HasSugar}");
+                
+                coffeeHolder.DestroyCoffee();
+                
+                // Return to spawn and despawn
+                if (assignedRandomDestination != null)
+                {
+                    occupiedDestinations.Remove(assignedRandomDestination);
+                }
+
+                currentState = NPCState.ReturningToSpawn;
+                currentDestination = spawnPoint;
+
+                Debug.Log("NPC satisfied! Returning to spawn point");
             }
-
-            currentState = NPCState.ReturningToSpawn;
-            currentDestination = spawnPoint;
-
-            Debug.Log("NPC returning to spawn point");
+            else
+            {
+                // No coffee - just regular interaction (old behavior)
+                Debug.Log("NPC: Player doesn't have coffee!");
+                canInteract = true; // Allow interaction again
+            }
         }
     }
 
