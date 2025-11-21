@@ -16,4 +16,13 @@ UIManager.Instance.ShowDialogue("Welcome to the Emotional Waves!");
 // Optional: Force hide dialogue early (normally it auto-hides after animation + delay)
 UIManager.Instance.HideDialogue();
 
+
+--- COFFEE SYSTEM (Setup in Inspector) ---
+
+CoffeeMachine - Assign: Player, CoffeeHolder, CupPrefab, SpawnPoint
+CoffeeHolder - Assign: CoffeeHoldPoint (empty on player)
+Ingredient - Set type: Milk/Sugar, Assign: Player, CoffeeHolder
+TrashBin - Assign: Player, CoffeeHolder
+NPC - Assign: CoffeeHolder (auto-finds if not set)
+
 ===============================================
