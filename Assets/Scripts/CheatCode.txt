@@ -12,6 +12,8 @@ UIManager.Instance.ClearAllObjectives();
 --- DIALOGUE ---
 
 UIManager.Instance.ShowDialogue("Welcome to the Emotional Waves!");
+
+// Optional: Force hide dialogue early (normally it auto-hides after animation + delay)
 UIManager.Instance.HideDialogue();
 
 ===============================================
