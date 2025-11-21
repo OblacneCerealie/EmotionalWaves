@@ -63,4 +63,4 @@ crashlytics-build.properties
 .DS_Store
 
 #JetBrains project thing
-.idea
+.idea/
