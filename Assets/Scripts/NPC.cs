@@ -18,8 +18,14 @@ public class NPC : MonoBehaviour
     [Header("Player Reference")]
     [SerializeField] private Transform player;
 
+    [Header("Interaction Timeouts")]
+    [SerializeField] private float secondInteractionTimeout = 10f; // seconds
+    [SerializeField] private int anxietyPenaltyOnTimeout = 5; // amount to add when customer leaves unserved
+    private Coroutine secondInteractionTimeoutCoroutine;
+
     // Static list to track occupied destinations across all NPCs
     private static List<Transform> occupiedDestinations = new List<Transform>();
+    
 
     private enum NPCState
     {
@@ -110,6 +116,11 @@ public class NPC : MonoBehaviour
                 {
                     currentState = NPCState.WaitingForSecondInteraction;
                     canInteract = true;
+
+                    // Start the 2nd-interaction timeout
+                    StartSecondInteractionTimeout();
+
+                    Debug.Log("NPC reached random destination and is waiting for second interaction!");
                 }
                 break;
 
@@ -187,6 +198,9 @@ public class NPC : MonoBehaviour
     {
         canInteract = false;
 
+        // If a timeout coroutine is running, cancel it because the player interacted
+        StopSecondInteractionTimeout();
+
         if (currentState == NPCState.WaitingForFirstInteraction)
         {
             // First interaction - go to random destination
@@ -220,26 +234,66 @@ public class NPC : MonoBehaviour
             Debug.Log("NPC returning to spawn point");
         }
     }
-
-    private Transform GetRandomAvailableDestination()
+    
+    private void StartSecondInteractionTimeout()
     {
-        List<Transform> availableDestinations = new List<Transform>();
+        StopSecondInteractionTimeout();
 
-        foreach (Transform destination in randomDestinations)
+        if (secondInteractionTimeout > 0f)
         {
-            if (!occupiedDestinations.Contains(destination))
-            {
-                availableDestinations.Add(destination);
-            }
+            secondInteractionTimeoutCoroutine = StartCoroutine(SecondInteractionTimeoutCoroutine());
+        }
+    }
+
+    private void StopSecondInteractionTimeout()
+    {
+        if (secondInteractionTimeoutCoroutine != null)
+        {
+            StopCoroutine(secondInteractionTimeoutCoroutine);
+            secondInteractionTimeoutCoroutine = null;
+        }
+    }
+
+    private IEnumerator SecondInteractionTimeoutCoroutine()
+    {
+        float remaining = secondInteractionTimeout;
+        while (remaining > 0f)
+        {
+            Debug.Log($"Second interaction timeout: {Mathf.CeilToInt(remaining)}s remaining");
+            float wait = Mathf.Min(1f, remaining);
+            yield return new WaitForSeconds(wait);
+            remaining -= wait;
         }
 
-        if (availableDestinations.Count > 0)
+        // Timeout reached: behave as if second interaction happened, but without player
+        Debug.Log($"Second interaction timeout ({secondInteractionTimeout}s) reached — NPC will leave.");
+
+        // Increment anxiety because customer left without being served
+        if (BarManager.Instance != null)
         {
-            int randomIndex = Random.Range(0, availableDestinations.Count);
-            return availableDestinations[randomIndex];
+            BarManager.Instance.AddAnxiety(anxietyPenaltyOnTimeout);
+        }
+        else
+        {
+            Debug.LogWarning("BarManager instance not found. Cannot add anxiety.");
         }
 
-        return null;
+        // Clean up occupied destination
+        if (assignedRandomDestination != null && occupiedDestinations.Contains(assignedRandomDestination))
+        {
+            occupiedDestinations.Remove(assignedRandomDestination);
+        }
+
+        // Clear assigned destination to avoid double-remove later
+        assignedRandomDestination = null;
+
+        // Transition to returning to spawn
+        currentState = NPCState.ReturningToSpawn;
+        currentDestination = spawnPoint;
+        canInteract = false;
+
+        secondInteractionTimeoutCoroutine = null;
+        yield break;
     }
 
     private void SpawnNPC()
@@ -254,6 +308,10 @@ public class NPC : MonoBehaviour
     private void Despawn()
     {
         Debug.Log("NPC despawned");
+
+        // Ensure timeout coroutine is stopped when despawning
+        StopSecondInteractionTimeout();
+
         currentState = NPCState.NotSpawned;
         gameObject.SetActive(false);
         // Or use: Destroy(gameObject);
@@ -266,6 +324,29 @@ public class NPC : MonoBehaviour
         {
             occupiedDestinations.Remove(assignedRandomDestination);
         }
+
+        // Ensure coroutine is stopped
+        StopSecondInteractionTimeout();
+    }
+
+    // Picks a random destination from randomDestinations that is not currently occupied.
+    private Transform GetRandomAvailableDestination()
+    {
+        if (randomDestinations == null || randomDestinations.Length == 0) return null;
+
+        List<Transform> candidates = new List<Transform>();
+        foreach (Transform dest in randomDestinations)
+        {
+            if (dest == null) continue;
+            if (!occupiedDestinations.Contains(dest))
+            {
+                candidates.Add(dest);
+            }
+        }
+
+        if (candidates.Count == 0) return null;
+
+        return candidates[Random.Range(0, candidates.Count)];
     }
 
     // Visual helper in editor

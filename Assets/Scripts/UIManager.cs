@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI; // added for Slider
 
 public class UIManager : MonoBehaviour
 {
@@ -19,6 +20,18 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float typewriterSpeed = 0.05f;
     [SerializeField] private float dialogueDisplayDuration = 2f;
 
+    [Header("Anxiety UI")]
+    [SerializeField] private Slider anxietySlider; 
+    [SerializeField] private TextMeshProUGUI anxietyText; 
+
+    [Tooltip("RawImage used as red vignette overlay. Assign RawImage (full-screen) here")]
+    [SerializeField] private RawImage vignetteImage;
+    [Tooltip("Maximum alpha the vignette can reach at max anxiety")]
+    [SerializeField] private float vignetteMaxAlpha = 0.6f;
+    private Coroutine vignetteCoroutine;
+
+    
+    
     private List<string> activeObjectives = new List<string>();
     private Coroutine currentDialogueCoroutine;
     private CanvasGroup objectiveCanvasGroup;
@@ -56,6 +69,26 @@ public class UIManager : MonoBehaviour
                 dialogueCanvasGroup = dialoguePanel.AddComponent<CanvasGroup>();
             }
             dialoguePanel.SetActive(false);
+        }
+
+        // Initialize anxiety UI if slider exists
+        if (anxietySlider != null)
+        {
+            anxietySlider.minValue = 0;
+            // leave maxValue as-is until SetAnxiety is called by BarManager or other code
+            anxietySlider.value = 0;
+        }
+        if (anxietyText != null)
+        {
+            anxietyText.text = "Anxiety: 0";
+        }
+
+        // Initialize vignette to invisible
+        if (vignetteImage != null)
+        {
+            Color c = vignetteImage.color;
+            c.a = 0f;
+            vignetteImage.color = c;
         }
     }
 
@@ -214,5 +247,52 @@ public class UIManager : MonoBehaviour
             dialoguePanel.SetActive(false);
         }
     }
-}
 
+    // New API for BarManager to call when anxiety changes
+    public void SetAnxiety(int current, int max)
+    {
+        if (anxietySlider != null)
+        {
+            anxietySlider.maxValue = Mathf.Max(1, max);
+            anxietySlider.value = Mathf.Clamp(current, 0, max);
+        }
+
+        if (anxietyText != null)
+        {
+            anxietyText.text = $"Anxiety: {Mathf.Clamp(current, 0, max)}/{max}";
+        }
+
+        // Animate vignette alpha proportional to anxiety
+        if (vignetteImage != null)
+        {
+            float normalized = (max > 0) ? (current / (float)max) : 0f;
+            float targetAlpha = Mathf.Clamp01(normalized) * Mathf.Clamp01(vignetteMaxAlpha);
+            // Start or restart animation
+            if (vignetteCoroutine != null) StopCoroutine(vignetteCoroutine);
+            vignetteCoroutine = StartCoroutine(AnimateVignetteAlpha(targetAlpha));
+        }
+    }
+
+    // Smoothly lerp vignette alpha to target over ~1 second
+    private IEnumerator AnimateVignetteAlpha(float targetAlpha)
+    {
+        float duration = 1f;
+        float elapsed = 0f;
+        Color startColor = vignetteImage.color;
+        float startAlpha = startColor.a;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float a = Mathf.Lerp(startAlpha, targetAlpha, t);
+            Color c = vignetteImage.color;
+            c.a = a;
+            vignetteImage.color = c;
+            yield return null;
+        }
+        Color final = vignetteImage.color;
+        final.a = targetAlpha;
+        vignetteImage.color = final;
+        vignetteCoroutine = null;
+    }
+}
