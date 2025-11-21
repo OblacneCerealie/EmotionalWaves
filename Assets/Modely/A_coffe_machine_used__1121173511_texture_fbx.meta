@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Modely/A_coffe_machine_used__1121173511_texture_fbx.meta
 guid: 72109d864ee599440a2eade697a4c9f4
+========
+guid: ce361c0cdcb2dd7469714d305cd47c20
+>>>>>>>> origin/varier:Assets/WorldMaterialsFree/Resource Files/AgedDarkWood/Materials.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

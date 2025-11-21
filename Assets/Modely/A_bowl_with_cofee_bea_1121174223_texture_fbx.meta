@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Modely/A_bowl_with_cofee_bea_1121174223_texture_fbx.meta
 guid: d081b8ff5463cb343afd1d7a8026efcc
+========
+guid: c5007d39f44fafe4eb2ce13351dd963f
+>>>>>>>> origin/varier:Assets/WorldMaterialsFree/HDRPMaterials.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

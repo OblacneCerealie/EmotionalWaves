@@ -1,5 +1,10 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Scenes/MatusTestScene.unity.meta
 guid: 94ab9785e6da06a4c9cd8a669fe3a816
+========
+guid: 867b3307386c9654eb1df9258da2aa9c
+folderAsset: yes
+>>>>>>>> origin/varier:Assets/WorldMaterialsFree/Built-In_RPMaterials.meta
 DefaultImporter:
   externalObjects: {}
   userData: 
