@@ -1,5 +1,9 @@
 fileFormatVersion: 2
-guid: 87e638cb52abfc845af4b8fe7fb20fb1
+<<<<<<<< HEAD:Assets/Modely/A_bowl_with_sugar_cub_1121174414_texture_fbx/A_bowl_with_sugar_cub_1121174414_texture_fbx.meta
+guid: 10836689e94b0684bb0e208af6c83160
+========
+guid: 16ec49c588cac4144abfef32fdcdc4c5
+>>>>>>>> origin/varier:Assets/Modely/A_grining_machine_for_1121174305_texture_fbx.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
